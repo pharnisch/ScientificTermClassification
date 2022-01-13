@@ -28,18 +28,34 @@ train_ids = ids[:split_1]
 val_ids = ids[split_1:split_2]
 test_ids = ids[split_2:]
 
+# init tokenizer to prepare data for the transformer
+tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
 # helper function to split data
 def get_data_split(remaining_ids):
     _labels = [l for idx, l in enumerate(labels) if idx in ids]
     _terms = [l for idx, l in enumerate(terms) if idx in ids]
     _texts = [l for idx, l in enumerate(texts) if idx in ids]
-    return _labels, _terms, _texts
+    _label_ids = [target_dict[l] for l in _labels]
+    _inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(_terms, _texts)]
+    _inputs, _masks = tokenize_function(_inputs, tokenizer)
+    return torch.tensor(_label_ids), torch.tensor(_inputs), torch.tensor(_masks)
 
 
-train_labels, train_terms, train_texts = get_data_split(train_ids)
-val_labels, val_terms, val_texts = get_data_split(val_ids)
-test_labels, test_terms, test_texts = get_data_split(test_ids)
+train_labels, train_inputs, train_masks = get_data_split(train_ids)
+val_labels, val_inputs, val_masks = get_data_split(val_ids)
+test_labels, test_inputs, test_masks = get_data_split(test_ids)
+
+
+# helper function to clean and tokenize
+def tokenize_function(sentences, tokenizer):
+    cleaned_sentences = [sentence.replace("\n", "").replace("==", "") for sentence in sentences]
+    cleaned_sentences = [sentence.replace("No Results", "").replace("DisambiguationError", "") for sentence in cleaned_sentences]
+    cleaned_sentences = [re.sub(r'\s+', ' ', sentence).strip() for sentence in cleaned_sentences]
+    tokenized = tokenizer(cleaned_sentences, padding="max_length", truncation=True)
+    _ids = tokenized["input_ids"]
+    _masks = tokenized["attention_mask"]
+    return _ids, _masks
 
 
 # train_labels = [label for idx, label in enumerate(labels) if idx in train_ids]
@@ -55,30 +71,18 @@ test_labels, test_terms, test_texts = get_data_split(test_ids)
 # test_texts = [label for idx, label in enumerate(texts) if idx in test_ids]
 
 
-# helper function to clean and tokenize
-def tokenize_function(sentences, tokenizer):
-    cleaned_sentences = [sentence.replace("\n", "").replace("==", "") for sentence in sentences]
-    cleaned_sentences = [sentence.replace("No Results", "").replace("DisambiguationError", "") for sentence in cleaned_sentences]
-    cleaned_sentences = [re.sub(r'\s+', ' ', sentence).strip() for sentence in cleaned_sentences]
-    tokenized = tokenizer(cleaned_sentences, padding="max_length", truncation=True)
-    _ids = tokenized["input_ids"]
-    _masks = tokenized["attention_mask"]
-    return _ids, _masks
+# train_label_ids = [target_dict[l] for l in train_labels]
+# val_label_ids = [target_dict[l] for l in val_labels]
+# test_label_ids = [target_dict[l] for l in test_labels]
+
+# train_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(train_terms, train_texts)]
+# val_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(val_terms, val_texts)]
+# test_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(test_terms, test_texts)]
 
 
-train_label_ids = [target_dict[l] for l in train_labels]
-val_label_ids = [target_dict[l] for l in val_labels]
-test_label_ids = [target_dict[l] for l in test_labels]
-
-train_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(train_terms, train_texts)]
-val_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(val_terms, val_texts)]
-test_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(test_terms, test_texts)]
-
-# init tokenizer to prepare data for the transformer
-tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
-train_inputs, train_masks = tokenize_function(train_inputs, tokenizer)
-val_inputs, val_masks = tokenize_function(val_inputs, tokenizer)
-test_inputs, test_masks = tokenize_function(test_inputs, tokenizer)
+# train_inputs, train_masks = tokenize_function(train_inputs, tokenizer)
+# val_inputs, val_masks = tokenize_function(val_inputs, tokenizer)
+# test_inputs, test_masks = tokenize_function(test_inputs, tokenizer)
 
 
 class TermClassifier(torch.nn.Module):
@@ -104,14 +108,6 @@ class TermClassifier(torch.nn.Module):
 
 
 model = TermClassifier(target_dict)
-
-# Convert other data types to torch.Tensor
-train_labels = torch.tensor(train_label_ids)
-train_inputs = torch.tensor(train_inputs)
-train_masks = torch.tensor(train_masks)
-val_labels = torch.tensor(val_label_ids)
-val_inputs = torch.tensor(val_inputs)
-val_masks = torch.tensor(val_masks)
 
 batch_size = 16
 
