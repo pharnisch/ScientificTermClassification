@@ -199,6 +199,6 @@ for epoch_i in range(epochs):
         torch.save(model.state_dict(), f"BERT_classifier_best_val_accuracy")
     print(f"val loss: {val_loss}, val accuracy: {val_accuracy}")
     test_loss, test_accuracy = evaluate(model, test_dataloader)
-    print(f"test loss: {test_loss}, val accuracy: {test_accuracy}")
+    print(f"test loss: {test_loss}, test accuracy: {test_accuracy}")
     print("----------------------------------------")
 
