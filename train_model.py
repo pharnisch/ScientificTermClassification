@@ -17,7 +17,7 @@ for label in labels:
         target_dict[label] = len(target_dict)
 
 epochs = 20
-shuffle_equally = True
+shuffle_equally = False
 
 # seperate data into train, val, test
 ids = list(range(len(labels)))
