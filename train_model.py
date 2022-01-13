@@ -45,9 +45,9 @@ def tokenize_function(sentences, tokenizer):
 
 # helper function to split data
 def get_data_split(remaining_ids):
-    _labels = [l for idx, l in enumerate(labels) if idx in ids]
-    _terms = [l for idx, l in enumerate(terms) if idx in ids]
-    _texts = [l for idx, l in enumerate(texts) if idx in ids]
+    _labels = [l for idx, l in enumerate(labels) if idx in remaining_ids]
+    _terms = [l for idx, l in enumerate(terms) if idx in remaining_ids]
+    _texts = [l for idx, l in enumerate(texts) if idx in remaining_ids]
     _label_ids = [target_dict[l] for l in _labels]
     _inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(_terms, _texts)]
     _inputs, _masks = tokenize_function(_inputs, tokenizer)
@@ -193,6 +193,7 @@ def evaluate(model, val_dataloader):
     return val_loss, val_accuracy
 
 
+best_val_accuracy = 0
 loss_fn = torch.nn.CrossEntropyLoss()
 for epoch_i in range(epochs):
     print(f"Epoch: {epoch_i + 1}")
@@ -227,9 +228,12 @@ for epoch_i in range(epochs):
     # After the completion of each training epoch, measure the model's performance
     # on our validation set.
     val_loss, val_accuracy = evaluate(model, val_dataloader)
+    if val_accuracy > best_val_accuracy:
+        best_val_accuracy = val_accuracy
+        torch.save(model.state_dict(), f"BERT_classifier_best_val_accuracy")
     print(f"val loss: {val_loss}, val accuracy: {val_accuracy}")
 
-    torch.save(model.state_dict(), f"BERT_classifier_epoch_{epoch_i}")
+    #torch.save(model.state_dict(), f"BERT_classifier_epoch_{epoch_i}")
 
 test_loss, test_accuracy = evaluate(model, test_dataloader)
 print(f"test loss: {test_loss}, val accuracy: {test_accuracy}")
