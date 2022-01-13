@@ -8,6 +8,12 @@ import regex as re
 with open('data/labels.pkl', 'rb') as labels_f, open('data/terms.pkl', 'rb') as terms_f, open('data/texts.pkl', 'rb') as texts_f:
     labels, terms, texts = pickle.load(labels_f), pickle.load(terms_f), pickle.load(texts_f)
 
+
+target_dict = {}
+for label in labels:
+    if label not in target_dict:
+        target_dict[label] = len(target_dict)
+
 epochs = 2
 max_items = 10
 labels = labels[:max_items]
@@ -24,10 +30,6 @@ def tokenize_function(sentences, tokenizer):
     return ids, masks
 
 
-target_dict = {}
-for label in labels:
-    if label not in target_dict:
-        target_dict[label] = len(target_dict)
 label_ids = [target_dict[l] for l in labels]
 
 inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(terms, texts)]
@@ -122,6 +124,7 @@ for epoch_i in range(epochs):
         b_input_ids, b_attn_mask, b_labels = tuple(t.to(device) for t in batch)
         model.zero_grad()
         logits = model(b_input_ids, b_attn_mask)
+
 
         # Compute loss and accumulate the loss values
         loss = loss_fn(logits, b_labels)
