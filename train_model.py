@@ -97,9 +97,9 @@ from transformers import AdamW, get_linear_schedule_with_warmup
 train_labels = torch.tensor(train_label_ids)
 train_inputs = torch.tensor(train_inputs)
 train_masks = torch.tensor(train_masks)
-val_labels = torch.tensor(train_label_ids)
-val_inputs = torch.tensor(train_inputs)
-val_masks = torch.tensor(train_masks)
+val_labels = torch.tensor(val_label_ids)
+val_inputs = torch.tensor(val_inputs)
+val_masks = torch.tensor(val_masks)
 
 batch_size = 16
 
