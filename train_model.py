@@ -123,6 +123,10 @@ val_data = TensorDataset(val_inputs, val_masks, val_labels)
 val_sampler = SequentialSampler(val_data)
 val_dataloader = DataLoader(val_data, sampler=val_sampler, batch_size=batch_size)
 
+test_data = TensorDataset(test_inputs, test_masks, test_labels)
+test_sampler = SequentialSampler(test_data)
+test_dataloader = DataLoader(test_data, sampler=test_sampler, batch_size=batch_size)
+
 # make usage of gpu if available
 if torch.cuda.is_available():
     device = torch.device("cuda")
@@ -226,3 +230,6 @@ for epoch_i in range(epochs):
     print(f"val loss: {val_loss}, val accuracy: {val_accuracy}")
 
     torch.save(model.state_dict(), f"BERT_classifier_epoch_{epoch_i}")
+
+test_loss, test_accuracy = evaluate(model, test_dataloader)
+print(f"test loss: {test_loss}, val accuracy: {test_accuracy}")
