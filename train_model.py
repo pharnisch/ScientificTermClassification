@@ -1,6 +1,7 @@
 import pickle
 import torch
-from tqdm.auto import tqdm
+from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
+from transformers import AdamW, get_linear_schedule_with_warmup
 from transformers import AdamW
 from transformers import BertTokenizer, BertModel, BertConfig
 import regex as re
@@ -10,14 +11,14 @@ import numpy as np
 with open('data/labels.pkl', 'rb') as labels_f, open('data/terms.pkl', 'rb') as terms_f, open('data/texts.pkl', 'rb') as texts_f:
     labels, terms, texts = pickle.load(labels_f), pickle.load(terms_f), pickle.load(texts_f)
 
-
 target_dict = {}
 for label in labels:
     if label not in target_dict:
         target_dict[label] = len(target_dict)
 
-epochs = 10
+epochs = 20
 
+# seperate data into train, val, test
 ids = list(range(len(labels)))
 random.seed(42)
 random.shuffle(ids)
@@ -26,27 +27,43 @@ split_2 = int(0.9 * len(ids))
 train_ids = ids[:split_1]
 val_ids = ids[split_1:split_2]
 test_ids = ids[split_2:]
-train_labels = [label for idx, label in enumerate(labels) if idx in train_ids]
-val_labels = [label for idx, label in enumerate(labels) if idx in val_ids]
-test_labels = [label for idx, label in enumerate(labels) if idx in test_ids]
-
-train_terms = [label for idx, label in enumerate(terms) if idx in train_ids]
-val_terms = [label for idx, label in enumerate(terms) if idx in val_ids]
-test_terms = [label for idx, label in enumerate(terms) if idx in test_ids]
-
-train_texts = [label for idx, label in enumerate(texts) if idx in train_ids]
-val_texts = [label for idx, label in enumerate(texts) if idx in val_ids]
-test_texts = [label for idx, label in enumerate(texts) if idx in test_ids]
 
 
+# helper function to split data
+def get_data_split(remaining_ids):
+    _labels = [l for idx, l in enumerate(labels) if idx in ids]
+    _terms = [l for idx, l in enumerate(terms) if idx in ids]
+    _texts = [l for idx, l in enumerate(texts) if idx in ids]
+    return _labels, _terms, _texts
+
+
+train_labels, train_terms, train_texts = get_data_split(train_ids)
+val_labels, val_terms, val_texts = get_data_split(val_ids)
+test_labels, test_terms, test_texts = get_data_split(test_ids)
+
+
+# train_labels = [label for idx, label in enumerate(labels) if idx in train_ids]
+# val_labels = [label for idx, label in enumerate(labels) if idx in val_ids]
+# test_labels = [label for idx, label in enumerate(labels) if idx in test_ids]
+#
+# train_terms = [label for idx, label in enumerate(terms) if idx in train_ids]
+# val_terms = [label for idx, label in enumerate(terms) if idx in val_ids]
+# test_terms = [label for idx, label in enumerate(terms) if idx in test_ids]
+#
+# train_texts = [label for idx, label in enumerate(texts) if idx in train_ids]
+# val_texts = [label for idx, label in enumerate(texts) if idx in val_ids]
+# test_texts = [label for idx, label in enumerate(texts) if idx in test_ids]
+
+
+# helper function to clean and tokenize
 def tokenize_function(sentences, tokenizer):
     cleaned_sentences = [sentence.replace("\n", "").replace("==", "") for sentence in sentences]
     cleaned_sentences = [sentence.replace("No Results", "").replace("DisambiguationError", "") for sentence in cleaned_sentences]
     cleaned_sentences = [re.sub(r'\s+', ' ', sentence).strip() for sentence in cleaned_sentences]
     tokenized = tokenizer(cleaned_sentences, padding="max_length", truncation=True)
-    ids = tokenized["input_ids"]
-    masks = tokenized["attention_mask"]
-    return ids, masks
+    _ids = tokenized["input_ids"]
+    _masks = tokenized["attention_mask"]
+    return _ids, _masks
 
 
 train_label_ids = [target_dict[l] for l in train_labels]
@@ -57,41 +74,36 @@ train_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(train_terms, t
 val_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(val_terms, val_texts)]
 test_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(test_terms, test_texts)]
 
+# init tokenizer to prepare data for the transformer
 tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 train_inputs, train_masks = tokenize_function(train_inputs, tokenizer)
 val_inputs, val_masks = tokenize_function(val_inputs, tokenizer)
 test_inputs, test_masks = tokenize_function(test_inputs, tokenizer)
 
+
 class TermClassifier(torch.nn.Module):
     def __init__(self, target_dict):
         super(TermClassifier, self).__init__()
-        #self.tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
         self.transformer = BertModel.from_pretrained("bert-base-cased")
-        self.linear = torch.nn.Linear(768, len(target_dict))  # hidden_size default of BERT
+        self.linear = torch.nn.Linear(768, len(target_dict))  # 768 is hidden_size default of BERT
 
     def forward(self, input_ids, attention_mask):
-        # Feed input to BERT
-        #tokenized = self.tokenize_function(batch)
-        #input_ids = torch.tensor(tokenized["input_ids"])
-        #attention_mask = torch.tensor(tokenized["attention_mask"])
+        # Feed required information about the term-sep-text-combination into the Transformer
         outputs = self.transformer(input_ids=input_ids, attention_mask=attention_mask)
         # Extract the last hidden state of the token `[CLS]` for classification task
         last_hidden_state_cls = outputs[0][:, 0, :]
         # Feed input to classifier to compute logits
-        logits = self.linear(last_hidden_state_cls)
-        return logits
+        _logits = self.linear(last_hidden_state_cls)
+        return _logits
 
     def predict(self, input_ids, attention_mask):
-        logits = self.forward(input_ids, attention_mask)
-        print(logits)
-        index = torch.argmax(logits, dim=1)
-        print(index)
+        _logits = self.forward(input_ids, attention_mask)
+        # receive the index that is the most likely one
+        index = torch.argmax(_logits, dim=1)
+        return index
 
 
 model = TermClassifier(target_dict)
-
-from torch.utils.data import TensorDataset, DataLoader, RandomSampler, SequentialSampler
-from transformers import AdamW, get_linear_schedule_with_warmup
 
 # Convert other data types to torch.Tensor
 train_labels = torch.tensor(train_label_ids)
@@ -113,7 +125,7 @@ val_data = TensorDataset(val_inputs, val_masks, val_labels)
 val_sampler = SequentialSampler(val_data)
 val_dataloader = DataLoader(val_data, sampler=val_sampler, batch_size=batch_size)
 
-
+# make usage of gpu if available
 if torch.cuda.is_available():
     device = torch.device("cuda")
     print(f'There are {torch.cuda.device_count()} GPU(s) available.')
@@ -122,8 +134,6 @@ if torch.cuda.is_available():
 else:
     print('No GPU available, using the CPU instead.')
     device = torch.device("cpu")
-
-
 model.to(device)
 
 # Create the optimizer
@@ -140,6 +150,8 @@ scheduler = get_linear_schedule_with_warmup(optimizer,
                                             num_warmup_steps=0, # Default value
                                             num_training_steps=total_steps)
 
+
+# evaluation helper method
 def evaluate(model, val_dataloader):
     """After the completion of each training epoch, measure the model's performance
     on our validation set.
@@ -215,4 +227,4 @@ for epoch_i in range(epochs):
     val_loss, val_accuracy = evaluate(model, val_dataloader)
     print(f"val loss: {val_loss}, val accuracy: {val_accuracy}")
 
-
+    torch.save(model.state_dict(), f"BERT_classifier_epoch_{epoch_i}")
