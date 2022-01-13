@@ -59,34 +59,6 @@ val_labels, val_inputs, val_masks = get_data_split(val_ids)
 test_labels, test_inputs, test_masks = get_data_split(test_ids)
 
 
-
-# train_labels = [label for idx, label in enumerate(labels) if idx in train_ids]
-# val_labels = [label for idx, label in enumerate(labels) if idx in val_ids]
-# test_labels = [label for idx, label in enumerate(labels) if idx in test_ids]
-#
-# train_terms = [label for idx, label in enumerate(terms) if idx in train_ids]
-# val_terms = [label for idx, label in enumerate(terms) if idx in val_ids]
-# test_terms = [label for idx, label in enumerate(terms) if idx in test_ids]
-#
-# train_texts = [label for idx, label in enumerate(texts) if idx in train_ids]
-# val_texts = [label for idx, label in enumerate(texts) if idx in val_ids]
-# test_texts = [label for idx, label in enumerate(texts) if idx in test_ids]
-
-
-# train_label_ids = [target_dict[l] for l in train_labels]
-# val_label_ids = [target_dict[l] for l in val_labels]
-# test_label_ids = [target_dict[l] for l in test_labels]
-
-# train_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(train_terms, train_texts)]
-# val_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(val_terms, val_texts)]
-# test_inputs = [term[0] + "[SEP]" + text[0] for term, text in zip(test_terms, test_texts)]
-
-
-# train_inputs, train_masks = tokenize_function(train_inputs, tokenizer)
-# val_inputs, val_masks = tokenize_function(val_inputs, tokenizer)
-# test_inputs, test_masks = tokenize_function(test_inputs, tokenizer)
-
-
 class TermClassifier(torch.nn.Module):
     def __init__(self, target_dict):
         super(TermClassifier, self).__init__()
@@ -148,9 +120,7 @@ optimizer = AdamW(model.parameters(),
 total_steps = len(train_dataloader) * epochs
 
 # Set up the learning rate scheduler
-scheduler = get_linear_schedule_with_warmup(optimizer,
-                                            num_warmup_steps=0, # Default value
-                                            num_training_steps=total_steps)
+scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=0, num_training_steps=total_steps)
 
 
 # evaluation helper method
@@ -205,7 +175,6 @@ for epoch_i in range(epochs):
         model.zero_grad()
         logits = model(b_input_ids, b_attn_mask)
 
-
         # Compute loss and accumulate the loss values
         loss = loss_fn(logits, b_labels)
         batch_loss += loss.item()
@@ -213,9 +182,6 @@ for epoch_i in range(epochs):
 
         # Perform a backward pass to calculate gradients
         loss.backward()
-
-        # Clip the norm of the gradients to 1.0 to prevent "exploding gradients"
-        #torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
 
         # Update parameters and the learning rate
         optimizer.step()
@@ -232,8 +198,6 @@ for epoch_i in range(epochs):
         best_val_accuracy = val_accuracy
         torch.save(model.state_dict(), f"BERT_classifier_best_val_accuracy")
     print(f"val loss: {val_loss}, val accuracy: {val_accuracy}")
-
-    #torch.save(model.state_dict(), f"BERT_classifier_epoch_{epoch_i}")
 
 test_loss, test_accuracy = evaluate(model, test_dataloader)
 print(f"test loss: {test_loss}, val accuracy: {test_accuracy}")
