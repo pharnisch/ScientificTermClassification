@@ -18,7 +18,7 @@ for label in labels:
 
 epochs = 10
 
-ids = range(len(labels))
+ids = list(range(len(labels)))
 random.seed(42)
 random.shuffle(ids)
 split_1 = int(0.8 * len(ids))
@@ -95,9 +95,11 @@ from transformers import AdamW, get_linear_schedule_with_warmup
 
 # Convert other data types to torch.Tensor
 train_labels = torch.tensor(train_label_ids)
-#val_labels = torch.tensor(y_val)
 train_inputs = torch.tensor(train_inputs)
 train_masks = torch.tensor(train_masks)
+val_labels = torch.tensor(train_label_ids)
+val_inputs = torch.tensor(train_inputs)
+val_masks = torch.tensor(train_masks)
 
 batch_size = 16
 
