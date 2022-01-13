@@ -114,6 +114,7 @@ scheduler = get_linear_schedule_with_warmup(optimizer,
 
 loss_fn = torch.nn.CrossEntropyLoss()
 for epoch_i in range(epochs):
+    print(f"Epoch: {epoch_i + 1}")
     total_loss, batch_loss, batch_counts = 0, 0, 0
     model.train()
     for step, batch in enumerate(train_dataloader):
@@ -131,16 +132,11 @@ for epoch_i in range(epochs):
         loss.backward()
 
         # Clip the norm of the gradients to 1.0 to prevent "exploding gradients"
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
+        #torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
 
         # Update parameters and the learning rate
         optimizer.step()
         scheduler.step()
-
-        # Print the loss values and time elapsed for every 20 batches
-        if (step % 20 == 0 and step != 0) or (step == len(train_dataloader) - 1):
-            print(f"{batch_loss / batch_counts:^12.6f}")
-            batch_loss, batch_counts = 0, 0
 
     # Calculate the average loss over the entire training data
     avg_train_loss = total_loss / len(train_dataloader)
