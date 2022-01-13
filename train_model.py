@@ -36,9 +36,9 @@ if shuffle_equally:
         _ids = label_id_lists[label]
         split_1 = int(0.8 * len(_ids))
         split_2 = int(0.9 * len(_ids))
-        train_ids.append(_ids[:split_1])
-        val_ids.append(_ids[split_1:split_2])
-        test_ids.append(_ids[split_2:])
+        train_ids.extend(_ids[:split_1])
+        val_ids.extend(_ids[split_1:split_2])
+        test_ids.extend(_ids[split_2:])
 else:
     random.seed(42)
     random.shuffle(ids)
