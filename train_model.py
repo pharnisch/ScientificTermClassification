@@ -31,6 +31,18 @@ test_ids = ids[split_2:]
 # init tokenizer to prepare data for the transformer
 tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
 
+
+# helper function to clean and tokenize
+def tokenize_function(sentences, tokenizer):
+    cleaned_sentences = [sentence.replace("\n", "").replace("==", "") for sentence in sentences]
+    cleaned_sentences = [sentence.replace("No Results", "").replace("DisambiguationError", "") for sentence in cleaned_sentences]
+    cleaned_sentences = [re.sub(r'\s+', ' ', sentence).strip() for sentence in cleaned_sentences]
+    tokenized = tokenizer(cleaned_sentences, padding="max_length", truncation=True)
+    _ids = tokenized["input_ids"]
+    _masks = tokenized["attention_mask"]
+    return _ids, _masks
+
+
 # helper function to split data
 def get_data_split(remaining_ids):
     _labels = [l for idx, l in enumerate(labels) if idx in ids]
@@ -46,16 +58,6 @@ train_labels, train_inputs, train_masks = get_data_split(train_ids)
 val_labels, val_inputs, val_masks = get_data_split(val_ids)
 test_labels, test_inputs, test_masks = get_data_split(test_ids)
 
-
-# helper function to clean and tokenize
-def tokenize_function(sentences, tokenizer):
-    cleaned_sentences = [sentence.replace("\n", "").replace("==", "") for sentence in sentences]
-    cleaned_sentences = [sentence.replace("No Results", "").replace("DisambiguationError", "") for sentence in cleaned_sentences]
-    cleaned_sentences = [re.sub(r'\s+', ' ', sentence).strip() for sentence in cleaned_sentences]
-    tokenized = tokenizer(cleaned_sentences, padding="max_length", truncation=True)
-    _ids = tokenized["input_ids"]
-    _masks = tokenized["attention_mask"]
-    return _ids, _masks
 
 
 # train_labels = [label for idx, label in enumerate(labels) if idx in train_ids]
