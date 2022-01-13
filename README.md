@@ -58,83 +58,55 @@ Tokenization for Transformer (BERT): tokenize, adding tokens, padding, truncatin
 On GPU Tesla V100-PCIE-32GB:
 ```
 Epoch: 1
-avg train loss: 0.48592027944512667
-val loss: 0.3736413549724966, val accuracy: 87.65555555555557
-test loss: 0.45815397398391117, test accuracy: 84.24444444444444
+avg train loss: 0.45981357934108624
+val loss: 0.38452588010268907, val accuracy: 86.5
+test loss: 0.38804003052568686, test accuracy: 87.16666666666667
 ----------------------------------------
-...
+Epoch: 2
+avg train loss: 0.32162566339674714
+val loss: 0.4077319192502182, val accuracy: 87.66666666666667
+test loss: 0.4174609709744497, test accuracy: 87.5
+----------------------------------------
+Epoch: 3
+avg train loss: 0.2521410969590458
+val loss: 0.33876629498379773, val accuracy: 88.58333333333333
+test loss: 0.3609540869119034, test accuracy: 88.75
+----------------------------------------
+Epoch: 4
+avg train loss: 0.20726745444039504
+val loss: 0.3520806852184857, val accuracy: 89.32777777777777
+test loss: 0.4039795075293902, test accuracy: 88.49444444444444
+----------------------------------------
+Epoch: 5
+avg train loss: 0.18417148951635076
+val loss: 0.36441500576833885, val accuracy: 88.07777777777777
+test loss: 0.393384957042775, test accuracy: 88.33333333333333
+----------------------------------------
+Epoch: 6
+avg train loss: 0.16998945107246982
+val loss: 0.36415901160575836, val accuracy: 89.16666666666667
+test loss: 0.3725149495061487, test accuracy: 89.41666666666667
 ----------------------------------------
 Epoch: 7
-avg train loss: 0.1560968588325583
-val loss: 0.4014184126111407, val accuracy: 89.23333333333333
-test loss: 0.44276860112072125, val accuracy: 88.16111111111111
+avg train loss: 0.15714695367447953
+val loss: 0.3906371349274074, val accuracy: 89.16666666666667
+test loss: 0.3880362138935258, test accuracy: 90.25
 ----------------------------------------
 Epoch: 8
-avg train loss: 0.14510568015102762
-val loss: 0.40868822049097314, val accuracy: 89.15
-test loss: 0.4309448376139335, val accuracy: 88.82777777777777
+avg train loss: 0.1507952446648172
+val loss: 0.41255322317408477, val accuracy: 89.16666666666667
+test loss: 0.38903524216618585, test accuracy: 89.08333333333333
 ----------------------------------------
 Epoch: 9
-avg train loss: 0.13812587918342614
-val loss: 0.4355157840340932, val accuracy: 89.06666666666666
-test loss: 0.46008312151325903, val accuracy: 88.57777777777777
-
+avg train loss: 0.14529295997015046
+val loss: 0.4172161076998115, val accuracy: 89.57777777777777
+test loss: 0.40865574848908487, test accuracy: 90.08333333333333
 ----------------------------------------
 Epoch: 10
-avg train loss: 0.13695546505636835
-val loss: 0.4530720585329497, val accuracy: 89.40555555555557
-test loss: 0.49575804626343595, val accuracy: 88.74444444444444
+avg train loss: 0.13440908850105188
+val loss: 0.4193162186234743, val accuracy: 89.07777777777777
+test loss: 0.43224049615319626, test accuracy: 89.41666666666667
 ----------------------------------------
-Epoch: 11
-avg train loss: 0.13742327113526698
-val loss: 0.46566479140628264, val accuracy: 89.65
-test loss: 0.47167895977048224, val accuracy: 89.41111111111111
-----------------------------------------
-Epoch: 12
-avg train loss: 0.13387962260836503
-val loss: 0.4197988706693286, val accuracy: 89.65555555555557
-test loss: 0.4746199485582959, val accuracy: 88.74444444444444
-----------------------------------------
-Epoch: 13
-avg train loss: 0.12412958373776443
-val loss: 0.45670228529294643, val accuracy: 89.82222222222222
-test loss: 0.5275128867946478, val accuracy: 88.57777777777777
-----------------------------------------
-Epoch: 14
-avg train loss: 0.12366450859364704
-val loss: 0.4480891472221871, val accuracy: 89.90555555555557
-test loss: 0.49854352105083916, val accuracy: 88.41111111111111
-----------------------------------------
-Epoch: 15
-avg train loss: 0.11987577051690702
-val loss: 0.4446297564179743, val accuracy: 90.07222222222222
-test loss: 0.500115554144783, val accuracy: 88.57777777777777
-----------------------------------------
-Epoch: 16
-avg train loss: 0.1188976679590208
-val loss: 0.45285178938508275, val accuracy: 90.15
-test loss: 0.5024003549455058, val accuracy: 88.41111111111111
-----------------------------------------
-Epoch: 17
-avg train loss: 0.11785403423239282
-val loss: 0.47756932590366585, val accuracy: 89.65555555555557
-test loss: 0.525707974706238, val accuracy: 88.49444444444444
-----------------------------------------
-Epoch: 18
-avg train loss: 0.11551252618898919
-val loss: 0.4675509086661502, val accuracy: 89.9
-test loss: 0.5161907441912141, val accuracy: 89.07777777777777
-----------------------------------------
-Epoch: 19
-avg train loss: 0.11399248270408861
-val loss: 0.4783930291746704, val accuracy: 89.9
-test loss: 0.52922599939416, val accuracy: 88.66111111111111
-----------------------------------------
-Epoch: 20
-avg train loss: 0.1129702885591784
-val loss: 0.4780923488369323, val accuracy: 89.9
-test loss: 0.5288947856525434, val accura
-
 
 ```
 
@@ -143,7 +115,7 @@ I used the val-accuracy score to determine the best model,
 then the test-accuracy to check how well it performs within unseen data.
 
 ### 7. Final Verdict on Accuracy
-The accuracy on the test data was 88.41% (at epoch 16 with 90.15% val accuracy)
+The accuracy on the test data was 90.08% (at epoch 9 with 89.58% val accuracy)
 which is probably not really suitable to use it yet.
 
 ### 8. Outlook

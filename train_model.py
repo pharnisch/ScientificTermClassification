@@ -16,8 +16,8 @@ for label in labels:
     if label not in target_dict:
         target_dict[label] = len(target_dict)
 
-epochs = 20
-shuffle_equally = False
+epochs = 10
+shuffle_equally = True
 
 # seperate data into train, val, test
 ids = list(range(len(labels)))
@@ -131,10 +131,7 @@ else:
 model.to(device)
 
 # Create the optimizer
-optimizer = AdamW(model.parameters(),
-                  lr=5e-5,    # Default learning rate
-                  eps=1e-8    # Default epsilon value
-                  )
+optimizer = AdamW(model.parameters(), lr=5e-5, eps=1e-8)
 
 # Total number of training steps
 total_steps = len(train_dataloader) * epochs
