@@ -17,16 +17,36 @@ for label in labels:
         target_dict[label] = len(target_dict)
 
 epochs = 20
+shuffle_equally = True
 
 # seperate data into train, val, test
 ids = list(range(len(labels)))
-random.seed(42)
-random.shuffle(ids)
-split_1 = int(0.8 * len(ids))
-split_2 = int(0.9 * len(ids))
-train_ids = ids[:split_1]
-val_ids = ids[split_1:split_2]
-test_ids = ids[split_2:]
+
+if shuffle_equally:
+    train_ids = []
+    val_ids = []
+    test_ids = []
+    label_id_lists = {}
+    for label in target_dict:
+        label_id_lists[label] = []
+        for i in ids:
+            if labels[i] == label:
+                label_id_lists[label].append(i)
+    for label in label_id_lists:
+        _ids = label_id_lists[label]
+        split_1 = int(0.8 * len(_ids))
+        split_2 = int(0.9 * len(_ids))
+        train_ids.append(_ids[:split_1])
+        val_ids.append(_ids[split_1:split_2])
+        test_ids.append(_ids[split_2:])
+else:
+    random.seed(42)
+    random.shuffle(ids)
+    split_1 = int(0.8 * len(ids))
+    split_2 = int(0.9 * len(ids))
+    train_ids = ids[:split_1]
+    val_ids = ids[split_1:split_2]
+    test_ids = ids[split_2:]
 
 # init tokenizer to prepare data for the transformer
 tokenizer = BertTokenizer.from_pretrained("bert-base-cased")
